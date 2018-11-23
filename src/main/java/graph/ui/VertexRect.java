@@ -1,6 +1,6 @@
-package ui;
+package graph.ui;
 
-import core.Vertex;
+import graph.core.Vertex;
 
 import java.awt.geom.Rectangle2D;
 

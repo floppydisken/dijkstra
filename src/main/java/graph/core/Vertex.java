@@ -1,4 +1,4 @@
-package core;
+package graph.core;
 
 import java.util.HashSet;
 import java.util.SortedSet;

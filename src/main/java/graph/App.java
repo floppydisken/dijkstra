@@ -1,13 +1,24 @@
-package graph;
+import core.*;
+import ui.GraphPanel;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import javax.swing.*;
+import java.awt.*;
+import java.util.Iterator;
+
+public class Main
 {
-    public static void main( String[] args )
+    private static final int WIDTH = 1000;
+    private static final int HEIGHT = 1000;
+
+    public static void main(String[] args)
     {
-        System.out.println( "Hello World!" );
+        IGraph graph = new LinkedGraph(false);
+
+        JFrame frame = new JFrame("Graph");
+        frame.setContentPane(new GraphPanel(WIDTH, HEIGHT, graph, 50));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
+
 }

@@ -1,6 +1,6 @@
-package ui;
+package graph.ui;
 
-import core.*;
+import graph.core.*;
 import org.w3c.dom.css.Rect;
 
 import javax.swing.*;

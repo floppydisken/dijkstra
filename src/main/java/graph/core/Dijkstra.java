@@ -1,4 +1,4 @@
-package core;
+package graph.core;
 
 import java.awt.*;
 import java.util.*;
