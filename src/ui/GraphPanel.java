@@ -1,6 +1,7 @@
 package ui;
 
 import core.*;
+import org.w3c.dom.css.Rect;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GraphPanel extends JPanel implements ActionListener
@@ -15,7 +17,6 @@ public class GraphPanel extends JPanel implements ActionListener
     private final int WIDTH;
     private final int HEIGHT;
     private final int DIMENSION;
-    private Graphics2D g2d;
     private int radiusOfVertex;
     private Algorithm alg;
     private IGraph<String> graph;
@@ -24,15 +25,18 @@ public class GraphPanel extends JPanel implements ActionListener
     private int framerate;
     private Timer ticker;
 
+    private long lastFrameUpdate;
+
     public GraphPanel(final int width, final int height, IGraph<String> graph, int framerate)
     {
         WIDTH = width;
         HEIGHT = height;
-        DIMENSION = 51;
+        DIMENSION = 91;
 
         this.graph = graph;
         this.framerate = 1000 / framerate;
         this.ticker = new Timer(this.framerate, e -> tick());
+        this.lastFrameUpdate = System.currentTimeMillis();
 
         rects = new ArrayList<>();
         graph.addVertexRange(createConnections(createGrid()));
@@ -44,57 +48,112 @@ public class GraphPanel extends JPanel implements ActionListener
         ticker.start();
     }
 
+    public void paintInParallel(Graphics g) throws VertexDoesNotExistException
+    {
+        Dijkstra.Matrix matrix = alg.getMatrix();
+
+        rects.parallelStream()
+                .forEach((r) ->
+                {
+                    Graphics2D pg2d = (Graphics2D) g.create();
+                    if (matrix.hasPrev(matrix.findVertex(r.getId())))
+                    {
+                        pg2d.setColor(Color.BLUE);
+                        pg2d.fill(r);
+                        pg2d.draw(r);
+                        r.setWeight(matrix.getWeightOf(matrix.findVertex(r.getId())));
+                    }
+                    if (matrix.getWeightOf(matrix.findVertex(r.getId())) == 0)
+                    {
+                        pg2d.setColor(Color.BLACK);
+                        pg2d.fill(r);
+                        pg2d.draw(r);
+                    }
+                    else
+                    {
+                        pg2d.setColor(Color.BLACK);
+                        pg2d.draw(r);
+                    }
+
+                    pg2d.dispose();
+
+                });
+
+    }
+
+    public void paintWithSingleCore(Graphics g) throws VertexDoesNotExistException
+    {
+        Dijkstra.Matrix matrix = alg.getMatrix();
+
+        Graphics2D g2d = (Graphics2D) g.create();
+
+        for (VertexRect rect : rects)
+        {
+            if (matrix.hasPrev(matrix.findVertex(rect.getId())))
+            {
+                g2d.setColor(Color.BLUE);
+                g2d.fill(rect);
+                g2d.draw(rect);
+                rect.setWeight(matrix.getWeightOf(matrix.findVertex(rect.getId())));
+            }
+            if (matrix.getWeightOf(matrix.findVertex(rect.getId())) == 0)
+            {
+                g2d.setColor(Color.BLACK);
+                g2d.fill(rect);
+                g2d.draw(rect);
+            }
+            else
+            {
+                g2d.setColor(Color.BLACK);
+                g2d.draw(rect);
+            }
+        }
+
+
+    }
+
     @Override
     public void paint(Graphics g)
     {
         super.paint(g);
-        g2d = (Graphics2D) g.create();
+//        Graphics2D g2d = (Graphics2D) g.create();
 
+//        System.out.println("Painting " + (System.currentTimeMillis() - lastFrameUpdate));
+//        lastFrameUpdate = System.currentTimeMillis();
         try
         {
-            Dijkstra.Matrix matrix = alg.getMatrix();
 
 //            System.out.println("Tick");
 
-            for (VertexRect rect : rects)
-            {
-                if (matrix.hasPrev(matrix.findVertex(rect.getId())))
-                {
-                    g2d.setColor(Color.BLUE);
-                    g2d.fill(rect);
-                    g2d.draw(rect);
-                    rect.setWeight(matrix.getWeightOf(matrix.findVertex(rect.getId())));
-                }
-                else if (matrix.getWeightOf(matrix.findVertex(rect.getId())) == 0)
-                {
-                    g2d.setColor(Color.BLACK);
-                    g2d.fill(rect);
-                    g2d.draw(rect);
-                }
-                else
-                {
-                    g2d.setColor(Color.BLACK);
-                    g2d.draw(rect);
-                }
-            }
+            // Multithreaded
+            paintInParallel(g);
+
+            // Not Multithreaded
+//            paintWithSingleCore(g);
 
 //            matrix.printMatrix();
             alg.tick();
+        }
+        catch (VertexDoesNotExistException e)
+        {
+            e.printStackTrace();
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
 
+//        g2d.dispose();
+
     }
 
     public void setupRectangles()
     {
 
-        int xDrawOffset = WIDTH / DIMENSION;
-        int yDrawOffset = HEIGHT / DIMENSION;
-        int width = WIDTH / DIMENSION;
-        int height = HEIGHT / DIMENSION;
+        double xDrawOffset = WIDTH / DIMENSION;
+        double yDrawOffset = HEIGHT / DIMENSION;
+        double width = WIDTH / DIMENSION;
+        double height = HEIGHT / DIMENSION;
 
         for (int y = 0; y < DIMENSION; ++y)
         {

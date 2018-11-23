@@ -85,7 +85,7 @@ public class Dijkstra implements Algorithm
             return prevs.get(index) != null;
         }
 
-        public Integer getWeightOf(Vertex vertex)
+        public synchronized Integer getWeightOf(Vertex vertex)
         {
             int index = vertices.indexOf(vertex);
 
@@ -99,7 +99,7 @@ public class Dijkstra implements Algorithm
             return prevs.get(index);
         }
 
-        public void setWeightFor(Vertex vertex, int weight, Vertex prev) throws Exception
+        public synchronized void setWeightFor(Vertex vertex, int weight, Vertex prev) throws Exception
         {
              int index = vertices.indexOf(vertex);
 
@@ -181,8 +181,6 @@ public class Dijkstra implements Algorithm
         preparedVertices = new LinkedList<>();
         notVisited.add(source);
 
-
-
         // Prepare the available vetices
         while(!notVisited.isEmpty())
         {
@@ -239,6 +237,31 @@ public class Dijkstra implements Algorithm
         if (currVertex.equals(source))
             matrix.setWeightFor(currVertex, 0, null);
 
+//        edges.parallelStream()
+//                .forEach((edge) ->
+//                        {
+//                            // This should be Integer.MAX_VALUE
+//                            int weightOfNext = matrix.getWeightOf(edge.getNext());
+//
+//                            // This should be 5, with a -> b connection
+//                            int weightOfCurr = matrix.getWeightOf(currVertex) + edge.getWeight();
+//
+//                            if (weightOfCurr < weightOfNext)
+//                            {
+//                                try
+//                                {
+//                                    matrix.setWeightFor(edge.getNext(), weightOfCurr, currVertex);
+//                                }
+//                                catch (Exception e)
+//                                {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//
+//
+//                        }
+//                );
+//
         for (Edge edge : edges)
         {
 //            System.out.println(

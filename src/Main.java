@@ -15,7 +15,7 @@ public class Main
         IGraph graph = new LinkedGraph(false);
 
         JFrame frame = new JFrame("Graph");
-        frame.setContentPane(new GraphPanel(WIDTH, HEIGHT, graph, 100));
+        frame.setContentPane(new GraphPanel(WIDTH, HEIGHT, graph, 50));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
