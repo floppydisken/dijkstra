@@ -1,11 +1,11 @@
-import core.*;
-import ui.GraphPanel;
+import graph.core.*;
+import graph.ui.GraphPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Iterator;
 
-public class Main
+public class App
 {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 1000;
