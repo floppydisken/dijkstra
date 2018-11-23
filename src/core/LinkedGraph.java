@@ -14,87 +14,6 @@ public class LinkedGraph<T> implements IGraph<T>
         this.isDirected = isDirected;
     }
 
-    @Override
-    public void traverse(SearchMethod method)
-    {
-        switch (method)
-        {
-            case BREADTH_FIRST:
-//                traverseBreadthFirst();
-                break;
-            case DEPTH_FIRST:
-//                traverseDepthFirst();
-                break;
-            default:
-                break;
-        }
-    }
-
-//    private void traverseDepthFirst()
-//    {
-//        Stack<Vertex> workingSet = new Stack<>();
-//        Stack<Vertex> visited = new Stack<>();
-//
-//        Vertex workingOn = (Vertex) vertices.keySet().toArray()[(int)(Math.random() * vertices.keySet().size())];
-//        workingSet.add(workingOn);
-//
-//
-//        while (!workingSet.empty())
-//        {
-//            Vertex vertex = workingSet.pop();
-//            vertex.setVisited(true);
-//            visited.add(workingOn);
-////            System.out.println("Traversing: " + vertex.getName());
-//            traverseDepthFirst(vertex, workingSet, visited);
-////            System.out.println("Done with: " + vertex.getName());
-//        }
-//
-//        Iterator<Vertex> it = vertices.keySet().iterator();
-//
-////        System.out.println("Clearing visitation");
-//        while(it.hasNext())
-//        {
-//            Vertex vertex = it.next();
-////            System.out.println("Visited " + vertex.getName() + ": " + vertex.isVisited());
-//            vertex.setVisited(false);
-//        }
-//    }
-//
-//    private void traverseDepthFirst(Vertex vertex, Stack<Vertex> workingSet, Stack<Vertex> visited)
-//    {
-//        try
-//        {
-//            Thread.sleep(100);
-//        }
-//        catch (InterruptedException e)
-//        {
-//            e.printStackTrace();
-//        }
-//
-//        Set<Vertex> edges = vertices.get(vertex);
-//
-//        for (Vertex edge : edges)
-//        {
-//            if (!edge.isVisited())
-//            {
-////                System.out.println(
-////                        String.format("Currently visiting: %s", edge.getName()));
-//                edge.setVisited(true);
-//                visited.add(edge);
-//                workingSet.add(edge);
-//                traverseDepthFirst(edge, workingSet, visited);
-//            }
-//
-//        }
-//
-//
-//    }
-
-//    private void traverseBreadthFirst()
-//    {
-//
-//    }
-
     public Set<Vertex> getVertices()
     {
         return new HashSet<>(vertices);
@@ -130,8 +49,8 @@ public class LinkedGraph<T> implements IGraph<T>
 
         source.addEdge(new Edge(weight, destination));
 
-//        if (!isDirected)
-//            destination.addEdge(new Edge(destination, weight, source));
+        if (!isDirected)
+            destination.addEdge(new Edge(weight, source));
     }
 
     @Override
@@ -153,9 +72,21 @@ public class LinkedGraph<T> implements IGraph<T>
         vertices.add(vertex);
     }
 
-    public void addVertexRange(Vertex... vertices)
+    public void addVertexRange(Vertex<T>... vertices)
     {
         this.vertices.addAll(Arrays.asList(vertices));
+    }
+    public void addVertexRange(Vertex<T>[][] vertices)
+    {
+        for (int y = 0; y < vertices.length; ++y)
+        {
+            this.vertices.addAll(Arrays.asList(vertices[y]));
+        }
+    }
+
+    public int size()
+    {
+        return vertices.size();
     }
 
     @Override
@@ -164,5 +95,4 @@ public class LinkedGraph<T> implements IGraph<T>
         if (vertices.contains(vertex))
             vertices.remove(vertex);
     }
-
 }

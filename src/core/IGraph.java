@@ -5,11 +5,6 @@ import java.util.Set;
 
 public interface IGraph<T>
 {
-    /**
-     * This should print out the traversal of the graph. For demonstration purposes.
-     * @param method
-     */
-    void traverse(SearchMethod method);
     Set<Vertex> getVertices();
 
     /**
@@ -21,8 +16,7 @@ public interface IGraph<T>
 
     /**
      * Add vertex with predefined connections
-     * @param vertex
-     * @param edges
+     * @param source
      */
     void addConnection(Vertex<T> source, int weight, Vertex<T> destination);
     void addConnection(String source, int weight, String destination) throws VertexDoesNotExistException;
@@ -34,11 +28,13 @@ public interface IGraph<T>
     void addVertex(Vertex<T> vertex) throws Exception;
 
     void addVertexRange(Vertex<T>... vertices);
+    void addVertexRange(Vertex<T>[][] vertices);
+
+    int size();
 
     /**
      * Add edge to a given vertex
      * @param vertex
-     * @param edge
      */
 //    void addVertexEdge(String vertex, String edge) throws VertexDoesNotExistException;
     void rmVertex(Vertex<T> vertex);

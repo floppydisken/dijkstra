@@ -1,6 +1,8 @@
 package core;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Dijkstra implements Algorithm
 {
@@ -46,11 +48,41 @@ public class Dijkstra implements Algorithm
             }
         }
 
+        public Matrix(Vertex[][] vertices)
+        {
+            // y * x = dimension
+            int dimension = vertices.length * vertices[0].length;
+            System.out.println("dimension in matrix is " + dimension);
+
+            weights = new ArrayList<>(dimension);
+            prevs = new ArrayList<>(dimension);
+
+            for (int y = 0; y < vertices.length; ++y)
+            {
+                this.vertices.addAll(Arrays.asList(vertices[y]));
+            }
+
+            // Prepare x columns
+            for (int i = 0; i < dimension; ++i)
+            {
+                weights.add(Integer.MAX_VALUE);
+
+                prevs.add(null);
+            }
+        }
+
         public Matrix()
         {
             this.vertices = new ArrayList<>();
             this.weights = new ArrayList<>();
             this.prevs = new ArrayList<>();
+        }
+
+        public boolean hasPrev(Vertex vertex)
+        {
+            int index = vertices.indexOf(vertex);
+
+            return prevs.get(index) != null;
         }
 
         public Integer getWeightOf(Vertex vertex)
@@ -113,11 +145,15 @@ public class Dijkstra implements Algorithm
 
     private IGraph graph;
     private Matrix matrix;
+    private Queue<Vertex> preparedVertices;
+    private Vertex source;
+    private boolean running;
 
-    public Dijkstra(IGraph graph)
+    public Dijkstra(IGraph graph, String from)
     {
         this.graph = graph;
-
+        this.preparedVertices = new LinkedList<>();
+        this.running = false;
 
         // Prepare vertices
         List<Vertex> vertices = new ArrayList<>();
@@ -125,18 +161,26 @@ public class Dijkstra implements Algorithm
         vertices.addAll(graph.getVertices());
 
         this.matrix = new Matrix(vertices);
+
+        try
+        {
+            prepareVertices(from);
+        }
+        catch (VertexDoesNotExistException e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public Matrix pathAlgorithm(String from, String to) throws Exception, VertexDoesNotExistException
+    public void prepareVertices(String from) throws VertexDoesNotExistException
     {
         // We choose a path to start from
-        Vertex source = graph.findVertex(from);
-        Vertex destination = graph.findVertex(to);
+        source = graph.findVertex(from);
 
         Queue<Vertex> notVisited = new LinkedList<>();
-        Queue<Vertex> visited = new LinkedList<>();
+        preparedVertices = new LinkedList<>();
         notVisited.add(source);
+
 
 
         // Prepare the available vetices
@@ -144,50 +188,73 @@ public class Dijkstra implements Algorithm
         {
             Vertex currVertex = notVisited.poll();
             SortedSet<Edge> edges = (SortedSet<Edge>) currVertex.getEdges();
-            visited.add(currVertex);
-
+            System.out.println(String.format("%s: %d", currVertex.getName(), edges.size()));
+            preparedVertices.add(currVertex);
 
             for (Edge edge : edges)
             {
-                if (!visited.contains(edge.getNext()))
+                if (!preparedVertices.contains(edge.getNext()))
                 {
                     notVisited.add(edge.getNext());
-                    visited.add(edge.getNext());
+                    preparedVertices.add(edge.getNext());
                 }
             }
         }
+    }
 
-        // Use dijkstra to solve the shortest path!
-        while(!visited.isEmpty())
+    public void finish()
+    {
+        source = null;
+        preparedVertices.clear();
+    }
+
+    public boolean isRunning()
+    {
+        return running;
+    }
+
+    public Matrix getMatrix()
+    {
+        return matrix;
+    }
+
+    /**
+     * Updates the matrix with the next values
+     * @throws Exception
+     */
+    public void tick() throws Exception
+    {
+        if (preparedVertices.isEmpty())
         {
-
-            Vertex currVertex = visited.poll();
-            // Sorted edge set
-            SortedSet<Edge> edges = currVertex.getEdges();
-
-            // First element doesn't have a predecessor
-            if (currVertex.equals(source))
-                matrix.setWeightFor(currVertex, 0, null);
-
-            for (Edge edge : edges)
-            {
-                System.out.println(
-                        String.format("OnVertex: %s, Weight: %d, Next: %s",
-                                currVertex.getName(), edge.getWeight(), edge.getNext().getName())
-                );
-
-                // This should be Integer.MAX_VALUE
-                int weightOfNext = matrix.getWeightOf(edge.getNext());
-
-                // This should be 5, with a -> b connection
-                int weightOfCurr = matrix.getWeightOf(currVertex) + edge.getWeight();
-
-                if (weightOfCurr < weightOfNext)
-                    matrix.setWeightFor(edge.getNext(), weightOfCurr, currVertex);
-
-            }
+//            System.out.println("EMPTY");
+            return;
         }
 
-        return matrix;
+        Vertex currVertex = preparedVertices.poll();
+//        System.out.println("Polled: " + currVertex.getName());
+        // Sorted edge set
+        SortedSet<Edge> edges = currVertex.getEdges();
+
+        // First element doesn't have a predecessor
+        if (currVertex.equals(source))
+            matrix.setWeightFor(currVertex, 0, null);
+
+        for (Edge edge : edges)
+        {
+//            System.out.println(
+//                    String.format("OnVertex: %s, Weight: %d, Next: %s",
+//                            currVertex.getName(), edge.getWeight(), edge.getNext().getName())
+//            );
+
+            // This should be Integer.MAX_VALUE
+            int weightOfNext = matrix.getWeightOf(edge.getNext());
+
+            // This should be 5, with a -> b connection
+            int weightOfCurr = matrix.getWeightOf(currVertex) + edge.getWeight();
+
+            if (weightOfCurr < weightOfNext)
+                matrix.setWeightFor(edge.getNext(), weightOfCurr, currVertex);
+
+        }
     }
 }
